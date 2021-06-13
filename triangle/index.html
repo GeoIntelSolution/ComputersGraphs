@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webgl-triangel-raw</title>
+</head>
+
+<body>
+  <canvas id="OUTPUT_CANVAS" width="500" height="500" style="border:1px solid #000;">
+
+  </canvas>
+</body>
+<script>
+  var gl;
+  var postionAttribIndex = 0;
+  function setupWebGL() {
+    let canvas = document.getElementById("OUTPUT_CANVAS");
+    gl = canvas.getContext("webgl");
+  }
+
+  function setupWhatToDraw() {
+    var positions = [
+      0, 0,
+      1, 0,
+      0, 1
+    ];
+
+    let typedPositions = new Float32Array(positions);
+
+    let positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, typedPositions, gl.STATIC_DRAW);
+
+    gl.enableVertexAttribArray(postionAttribIndex);
+    gl.vertexAttribPointer(postionAttribIndex, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  function setupHowToDraw() {
+    //vertex shader
+    var vsSource = `
+      attribute vec2 aPosition;
+      void main(){
+        gl_Position=vec4(aPosition,0.0,1.0);
+      }
+    `;
+
+    let vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vsSource);
+    gl.compileShader(vertexShader);
+    console.log(gl.getError());//只显示枚举值，对应https://learnopengl.com/In-Practice/Debugging
+    console.log(gl.getShaderInfoLog(vertexShader));//显示shader错误
+
+
+    var fsSource = `
+    void main(){
+      gl_FragColor=vec4(0.0,1.0,0.0,1.0);
+    }
+    `;
+
+    let fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragShader, fsSource);
+    gl.compileShader(fragShader);
+    console.log(gl.getError());
+
+    let program = gl.createProgram();
+    gl.attachShader(program, vertexShader);
+    // gl.attachShader(program, vertexShader);
+    gl.attachShader(program, fragShader);
+    gl.bindAttribLocation(program, postionAttribIndex, "aPosition");
+    gl.linkProgram(program);
+    console.log(gl.getProgramInfoLog(program));
+    gl.useProgram(program);
+
+
+
+  }
+
+  function draw() {
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+
+  function helloDraw() {
+    setupWebGL();
+    setupWhatToDraw();
+    setupHowToDraw();
+    draw();
+  }
+  window.onload = helloDraw;
+</script>
+
+</html>
